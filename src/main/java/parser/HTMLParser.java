@@ -1,6 +1,7 @@
 package parser;
 
 import java.io.*;
+import java.util.ArrayList;
 
 import org.jsoup.*;
 import org.jsoup.nodes.Document;
@@ -18,78 +19,111 @@ public class HTMLParser {
 
         try {
             while (true) {
-//                System.out.println(newUrl);
-
                 //get document
                 doc = Jsoup.connect(newUrl).get();
+
+                int lastPage = getLastPage(doc); // TODO
 
                 // get links to books
                 Elements innerContent = doc.select(".product-padding");
 
                 for (Element element : innerContent) {
-                    Element linkToBook = element.select(".cover").first();
-                    String link = "https://www.labirint.ru" + linkToBook.attr("href"); // link to a book page
+                    String link = getLinkToBook(element);
+                    bookPage = getBookPage(link);
+                    Element product = getProduct(bookPage);
+                    String rusTitle = getTitle(product);
+                    Elements redaction = getRedaction(product);
 
-                    // get a book's page
-                    bookPage = Jsoup.connect(link).get();
-
-                    // get product element
-                    Element product = bookPage.select("div#product").first();
-
-                    // get book's tittle (rus and eng)
-                    Element prodTitle = product.select(".prodtitle").first();
-                    String rusTitle = prodTitle.select("h1").first().text();
-                    String engTitle = (prodTitle.select("h2").first() != null) ? prodTitle.select("h2").first().text() : "Null";
-                    rusTitle = rusTitle.substring(rusTitle.lastIndexOf(":") + 2);  // TODO pass to DB, comment out sout
-
-                    System.out.printf("Title: %s%n", rusTitle);
-                    System.out.printf("Eng title: %s%n", engTitle);
-
-                    // get redaction info: author(s), translator, publisher
-                    Elements redaction = product.select("div.authors"); // 1) authors; 2) translators; 3) editor
-
-                    // get authors
-                    Elements authors = redaction.select("div:contains(Автор)"); // authors
-                    authors = authors.select("a");
-
-                    // get each author's name
-                    for (Element writer : authors) {
-                        writer.select("a").text();  // TODO pass to DB, comment out sout
-                        System.out.printf("Author: %s%n", writer.select("a").text());
-                    }
-
-                    // get translator name
-                    Elements translators = redaction.select("div:contains(Переводчик)");
-                    translators.select("a").text(); // TODO pass to DB, comment out sout
-                    System.out.printf("Translator: %s%n", translators.select("a").text());
-
-                    // get publisher
-                    Elements publisher = product.select(".publisher");
-                    publisher.select("a").text(); // TODO pass to DB, comment out sout
-                    System.out.printf("Publisher: %s%n", publisher.select("a").text());
-
-                    // get isbn
-                    Element isbn = bookPage.select("div.isbn").first();
-                    isbn.text(); // TODO pass to DB, comment out sout
-                    System.out.println(isbn.text());
-
-                    // get annotation
-                    Element annotation = bookPage.select("#product-about").first();
-                    annotation.select("p").text(); // TODO pass to DB, comment out sout
-                    System.out.println(annotation.select("p").text());
+                    getAuthors(redaction);
+                    getTranslators(redaction);
+                    getPublisher(product);
+                    getIsbn(bookPage);
+                    getAnnotation(bookPage);
                 }
 
-                // get the next page to parse
-                Elements countPages = doc.select(".pagination-next");
-                String nextUrl = countPages.select("a[href]").attr("href");
-                newUrl = URL + nextUrl;
-
+                newUrl = getString(URL, doc);
                 if (newUrl.equals(URL)) break; // exit on the last page
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static Document getBookPage(String link) throws IOException {
+        Document bookPage;// get a book's page
+        bookPage = Jsoup.connect(link).get();
+        return bookPage;
+    }
+
+    private static Element getProduct(Document bookPage) {
+        // get product element
+        return bookPage.select("div#product").first();
+    }
+
+    private static int getLastPage(Document doc) {
+        int lastPage = Integer.parseInt(doc.select(".pagination-numbers a[href]").last().text());
+        return lastPage;
+    }
+
+    private static String getLinkToBook(Element element) {
+        Element linkToBook = element.select(".cover").first();
+        return "https://www.labirint.ru" + linkToBook.attr("href");
+    }
+
+    private static Elements getRedaction(Element product) {
+        return product.select("div.authors");
+    }
+
+    private static String getTitle(Element product) {
+        Element prodTitle = product.select(".prodtitle").first();
+        String rusTitle = prodTitle.select("h1").first().text();
+//        String engTitle = (prodTitle.select("h2").first() != null) ? prodTitle.select("h2").first().text() : "Null";
+        rusTitle = rusTitle.substring(rusTitle.lastIndexOf(":") + 2);  // TODO pass to DB, comment out sout
+        return rusTitle;
+    }
+
+    private static String getString(String URL, Document doc) {
+        String newUrl;// get the next page to parse
+        Elements countPages = doc.select(".pagination-next");
+        String nextUrl = countPages.select("a[href]").attr("href");
+        newUrl = URL + nextUrl;
+        return newUrl;
+    }
+
+    private static ArrayList<String> getAuthors(Elements redaction) {
+        ArrayList<String> list = new ArrayList<>();
+        Elements authors = redaction.select("div:contains(Автор)"); // authors
+        authors = authors.select("a");
+        for (Element writer : authors) {
+            list.add(writer.select("a").text());  // TODO pass to DB, comment out sout
+            System.out.printf("Author: %s%n", writer.select("a").text());
+        }
+        return list;
+    }
+
+    private static String getTranslators(Elements redaction) {
+        Elements translators = redaction.select("div:contains(Переводчик)");
+//        System.out.printf("Translator: %s%n", translators.select("a").text());
+        return translators.select("a").text(); // TODO pass to DB, comment out sout
+    }
+
+    private static String getPublisher(Element product) {
+        Elements publisher = product.select(".publisher");
+//        System.out.printf("Publisher: %s%n", publisher.select("a").text());
+        return publisher.select("a").text(); // TODO pass to DB, comment out sout
+    }
+
+    private static String getIsbn(Document bookPage) {
+        Element isbn = bookPage.select("div.isbn").first();
+        System.out.println(isbn.text());
+        return isbn.text(); // TODO pass to DB, comment out sout
+    }
+
+    private static String getAnnotation(Document bookPage) {
+        Element annotation = bookPage.select("#product-about").first();
+//        System.out.println(annotation.select("p").text());
+        return annotation.select("p").text(); // TODO pass to DB, comment out sout
     }
 
     private static void toHTML(String url, String name) {
