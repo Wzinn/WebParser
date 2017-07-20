@@ -1,5 +1,7 @@
 package parser;
 
+import dbservices.DBException;
+import dbservices.DBService;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,9 +11,11 @@ import java.util.ArrayList;
 public class BookParser implements Runnable {
 
     private Document book;
+    private DBService dbService;
 
-    BookParser(Document book) {
+    BookParser(Document book, DBService dbService) {
         this.book = book;
+        this.dbService = dbService;
     }
 
     @Override
@@ -19,12 +23,29 @@ public class BookParser implements Runnable {
         Element product = getProduct(book);
         Elements redaction = getRedaction(product);
 
+        // String title, String authors, String translators, String publisher, String ISBN, String annotation
+
+        String title = getTitle(product);
+        String authors = getAuthors(redaction).toString();
+        String translators = getTranslators(redaction);
+        String publisher = getPublisher(product);
+        String ISBN =  getIsbn(book);
+        String annotation = getAnnotation(book);
+
+        try {
+            dbService.addBook(title, authors,translators, publisher, ISBN, annotation);
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
+
+        /*
         getTitle(product);
         getAuthors(redaction);
         getTranslators(redaction);
         getPublisher(product);
         getIsbn(book);
         getAnnotation(book);
+        */
     }
 
     private Element getProduct(Document bookPage) {

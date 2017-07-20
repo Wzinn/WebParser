@@ -4,14 +4,17 @@ import dbservices.dataset.BooksDataSet;
 import dbservices.executor.Executor;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class BooksDAO {
 
     private Executor executor;
+    private final Connection connection;
 
     public BooksDAO(Connection connection) {
         this.executor = new Executor(connection);
+        this.connection = connection;
     }
 
     public BooksDataSet get(long id) throws SQLException {
@@ -39,17 +42,17 @@ public class BooksDAO {
     public void insertBook(String title, String authors, String translators, String publisher, String ISBN, String annotation)
             throws SQLException {
 
-        title = "'" + title + "'";
-        authors = "'" + authors + "'";
-        translators = "'" + translators + "'";
-        publisher = "'" + publisher + "'";
-        ISBN = "'" + ISBN + "'";
-        annotation = "'" + annotation + "'";
+        PreparedStatement pstmt = connection.prepareStatement(
+                "INSERT INTO books (title, authors, translators, publisher, ISBN, annotation) VALUES (?, ?, ?, ?, ?, ?)");
+        pstmt.setString(1, title);
+        pstmt.setString(2, authors);
+        pstmt.setString(3, translators);
+        pstmt.setString(4, publisher);
+        pstmt.setString(5, ISBN);
+        pstmt.setString(6, annotation);
 
-        executor.execUpdate(
-                "INSERT INTO books (title, authors, translators, publisher, ISBN, annotation) " +
-                "VALUES (" + title + ", " + authors + ", " + translators + ", " + publisher + ", "
-                        + ISBN +", " + annotation + ")");
+        pstmt.execute();
+        pstmt.close();
 
     }
 
@@ -61,7 +64,7 @@ public class BooksDAO {
                 "translators varchar(256), " +
                 "publisher varchar(256), " +
                 "ISBN varchar(256), " +
-                "annotation varchar(256), " +
+                "annotation CLOB, " +
                 "primary key (id))"
         );
     }
