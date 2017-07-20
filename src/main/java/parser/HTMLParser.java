@@ -8,9 +8,9 @@ import org.jsoup.select.Elements;
 
 public class HTMLParser {
 
-    private final static String URL = "https://www.labirint.ru/genres/2304?page=";
+    private final String URL = "https://www.labirint.ru/genres/2304?page=";
 
-    public static void main(String[] args) {
+    public void parse() {
         try {
             int page = 1;
 
@@ -30,7 +30,7 @@ public class HTMLParser {
         }
     }
 
-    private static int getLastPage(Document doc) {
+    private int getLastPage(Document doc) {
         return Integer.parseInt(doc.select(".pagination-numbers a[href]").last().text());
     }
 

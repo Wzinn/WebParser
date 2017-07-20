@@ -1,0 +1,12 @@
+2017-07-20 10:29:20 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS BOOKS (ID BIGINT AUTO_INCREMENT, PRIMARY KEY (ID)),[*] TITLE VARCHAR(256), AUTHORS VARCHAR(256)TRANSLATORS VARCHAR(256)PUBLISHER VARCHAR(256)ISBN VARCHAR(256)ANNOTATION VARCHAR(256) "; SQL statement:
+create table if not exists books (id bigint auto_increment, primary key (id)), title varchar(256), authors varchar(256)translators varchar(256)publisher varchar(256)ISBN varchar(256)annotation varchar(256) [42000-196]
+2017-07-20 10:31:51 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS BOOKS (ID BIGINT AUTO_INCREMENT, PRIMARY KEY (ID)),[*] TITLE VARCHAR(256), AUTHORS VARCHAR(256)TRANSLATORS VARCHAR(256)PUBLISHER VARCHAR(256)ISBN VARCHAR(256)ANNOTATION VARCHAR(256) "; SQL statement:
+create table if not exists books (id bigint auto_increment, primary key (id)), title varchar(256), authors varchar(256)translators varchar(256)publisher varchar(256)ISBN varchar(256)annotation varchar(256) [42000-196]
+2017-07-20 10:33:53 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS BOOKS (ID BIGINT AUTO_INCREMENT, PRIMARY KEY (ID)),[*] TITLE VARCHAR(256), AUTHORS VARCHAR(256), TRANSLATORS VARCHAR(256), PUBLISHER VARCHAR(256), ISBN VARCHAR(256), ANNOTATION VARCHAR(256) "; SQL statement:
+create table if not exists books (id bigint auto_increment, primary key (id)), title varchar(256), authors varchar(256), translators varchar(256), publisher varchar(256), ISBN varchar(256), annotation varchar(256) [42000-196]
+2017-07-20 10:35:51 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS BOOKS (ID BIGINT AUTO_INCREMENT, TITLE VARCHAR(256), AUTHORS VARCHAR(256), TRANSLATORS VARCHAR(256), PUBLISHER VARCHAR(256), ISBN VARCHAR(256), ANNOTATION VARCHAR(256)PRIMARY KEY ([*]ID)) "; expected "HASH, AUTO_INCREMENT, NOT, NULL, CHECK, REFERENCES, ,, )"; SQL statement:
+create table if not exists books (id bigint auto_increment, title varchar(256), authors varchar(256), translators varchar(256), publisher varchar(256), ISBN varchar(256), annotation varchar(256)primary key (id)) [42001-196]
