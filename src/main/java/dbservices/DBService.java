@@ -5,15 +5,17 @@ import dbservices.dataset.BooksDataSet;
 import org.h2.jdbcx.JdbcDataSource;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class DBService {
 
     private final Connection connection;
 
     public DBService() {
-        this.connection = getH2Connection();
+        this.connection = getMysqlConnection();
     }
 
     public BooksDataSet getBook(long id) throws DBException {
@@ -24,15 +26,15 @@ public class DBService {
         }
     }
 
-    public long addBook(String title, String authors, String translators, String publisher, String ISBN, String annotation)
+    public void addBook(String title, String authors, String translators, String publisher, String ISBN, String annotation)
             throws DBException {
         try {
             connection.setAutoCommit(false); // disable autocommit to work with transactions
             BooksDAO dao = new BooksDAO(connection);
-            dao.createTable();
+            dao.createCTable();
             dao.insertBook(title, authors, translators, publisher, ISBN, annotation);
             connection.commit();
-            return dao.getBookId(title);
+//            return dao.getBookId(title);
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -60,6 +62,32 @@ public class DBService {
 
             return DriverManager.getConnection(url, name, pass);
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Connection getMysqlConnection() {
+        try {
+            DriverManager.registerDriver((Driver) Class.forName("com.mysql.jdbc.Driver").newInstance());
+
+            StringBuilder url = new StringBuilder();
+
+            url.
+                    append("jdbc:mysql://").        //db type
+                    append("localhost:").           //host name
+                    append("3306/").                //port
+                    append("web_parser?").          //db name
+                    append("user=root&").          //login
+                    append("password=password&"). // password
+                    append("characterEncoding=utf8&").
+                    append("relaxAutoCommit=true");
+
+
+            System.out.println("URL: " + url + "\n");
+
+            return DriverManager.getConnection(url.toString());
+        } catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;

@@ -16,15 +16,14 @@ public class PageParser implements Runnable {
     private Executor executor;
     private DBService dbService;
 
-    public PageParser(Elements pages, DBService dbService) {
+    PageParser(Elements pages, DBService dbService) {
         this.pages = pages;
-        executor = Executors.newFixedThreadPool(10);
+        executor = Executors.newFixedThreadPool(1);
         this.dbService =  dbService;
     }
 
     @Override
     public void run() {
-
         try {
             for (Element book : pages) {
                 Document bookPage = getBookPage(getLinkToBook(book));
@@ -34,7 +33,6 @@ public class PageParser implements Runnable {
         } catch (IOException e){
             e.printStackTrace();
         }
-
     }
 
     private Document getBookPage(String link) throws IOException {

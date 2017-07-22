@@ -23,10 +23,12 @@ public class BookParser implements Runnable {
         Element product = getProduct(book);
         Elements redaction = getRedaction(product);
 
-        // String title, String authors, String translators, String publisher, String ISBN, String annotation
-
         String title = getTitle(product);
-        String authors = getAuthors(redaction).toString();
+
+        //TODO: should be an ArrayList to send to DB
+//        ArrayList authors = getAuthors(redaction);
+        String authors = getAuthors(redaction).toString().replaceAll("\\[|\\]", "").replaceAll(", ","\t");
+
         String translators = getTranslators(redaction);
         String publisher = getPublisher(product);
         String ISBN =  getIsbn(book);
@@ -38,14 +40,6 @@ public class BookParser implements Runnable {
             e.printStackTrace();
         }
 
-        /*
-        getTitle(product);
-        getAuthors(redaction);
-        getTranslators(redaction);
-        getPublisher(product);
-        getIsbn(book);
-        getAnnotation(book);
-        */
     }
 
     private Element getProduct(Document bookPage) {
@@ -61,7 +55,7 @@ public class BookParser implements Runnable {
         String rusTitle = prodTitle.select("h1").first().text();
         System.out.println(rusTitle.substring(rusTitle.lastIndexOf(":") + 2));
 //        String engTitle = (prodTitle.select("h2").first() != null) ? prodTitle.select("h2").first().text() : "Null";
-        return rusTitle.substring(rusTitle.lastIndexOf(":") + 2);  // TODO pass to DB, comment out sout
+        return rusTitle.substring(rusTitle.lastIndexOf(":") + 2);
     }
 
     private ArrayList<String> getAuthors(Elements redaction) {
@@ -69,33 +63,33 @@ public class BookParser implements Runnable {
         Elements authors = redaction.select("div:contains(Автор)"); // authors
         authors = authors.select("a");
         for (Element writer : authors) {
-            list.add(writer.select("a").text());  // TODO pass to DB, comment out sout
-            System.out.printf("Author: %s%n", writer.select("a").text());
+            list.add(writer.select("a").text());
+//            System.out.printf("Author: %s%n", writer.select("a").text());
         }
         return list;
     }
 
     private String getTranslators(Elements redaction) {
         Elements translators = redaction.select("div:contains(Переводчик)");
-        System.out.printf("Translator: %s%n", translators.select("a").text());
-        return translators.select("a").text(); // TODO pass to DB, comment out sout
+//        System.out.printf("Translator: %s%n", translators.select("a").text());
+        return translators.select("a").text();
     }
 
     private String getPublisher(Element product) {
         Elements publisher = product.select(".publisher");
-        System.out.printf("Publisher: %s%n", publisher.select("a").text());
-        return publisher.select("a").text(); // TODO pass to DB, comment out sout
+//        System.out.printf("Publisher: %s%n", publisher.select("a").text());
+        return publisher.select("a").text();
     }
 
     private String getIsbn(Document bookPage) {
         Element isbn = bookPage.select("div.isbn").first();
-        System.out.println(isbn.text());
-        return isbn.text(); // TODO pass to DB, comment out sout
+//        System.out.println(isbn.text());
+        return isbn.text();
     }
 
     private String getAnnotation(Document bookPage) {
         Element annotation = bookPage.select("#product-about").first();
-        System.out.println(annotation.select("p").text());
-        return annotation.select("p").text(); // TODO pass to DB, comment out sout
+//        System.out.println(annotation.select("p").text());
+        return annotation.select("p").text();
     }
 }
