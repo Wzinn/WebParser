@@ -26,8 +26,7 @@ public class BookParser implements Runnable {
         String title = getTitle(product);
 
         //TODO: should be an ArrayList to send to DB
-//        ArrayList authors = getAuthors(redaction);
-        String authors = getAuthors(redaction).toString();
+        ArrayList authors = getAuthors(redaction);
 
         String translators = getTranslators(redaction);
         String publisher = getPublisher(product);
@@ -39,7 +38,6 @@ public class BookParser implements Runnable {
         } catch (DBException e) {
             e.printStackTrace();
         }
-
     }
 
     private Element getProduct(Document bookPage) {
@@ -53,9 +51,9 @@ public class BookParser implements Runnable {
     private String getTitle(Element product) {
         Element prodTitle = product.select(".prodtitle").first();
         String rusTitle = prodTitle.select("h1").first().text();
-        System.out.println(rusTitle.substring(rusTitle.lastIndexOf(":") + 2));
+        System.out.println(rusTitle.substring(rusTitle.lastIndexOf(":") + 1).trim());
 //        String engTitle = (prodTitle.select("h2").first() != null) ? prodTitle.select("h2").first().text() : "Null";
-        return rusTitle.substring(rusTitle.lastIndexOf(":") + 2);
+        return rusTitle.substring(rusTitle.lastIndexOf(":") + 1).trim();
     }
 
     private ArrayList<String> getAuthors(Elements redaction) {

@@ -26,12 +26,44 @@ public class DBService {
         }
     }
 
-    public void addBook(String title, String authors, String translators, String publisher, String ISBN, String annotation)
+    public ArrayList<BooksDataSet> getByTitle(String title) throws DBException {
+        try {
+            return (new BooksDAO(connection).getByTitle(title));
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public ArrayList<BooksDataSet> getByAuthor(String author) throws DBException {
+        try {
+            return (new BooksDAO(connection).getByAuthor(author));
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
+
+
+    public ArrayList<BooksDataSet> getByAnnotation(String annotation) throws DBException {
+        try {
+            return (new BooksDAO(connection).getByAnnotation(annotation));
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public ArrayList<BooksDataSet> getAll() throws DBException {
+        try {
+            return (new BooksDAO(connection).getAll());
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public synchronized void addBook(String title, ArrayList authors, String translators, String publisher, String ISBN, String annotation)
             throws DBException {
         try {
             connection.setAutoCommit(false); // disable autocommit to work with transactions
             BooksDAO dao = new BooksDAO(connection);
-            dao.createCTable();
             dao.insertBook(title, authors, translators, publisher, ISBN, annotation);
             connection.commit();
 //            return dao.getBookId(title);
@@ -70,9 +102,7 @@ public class DBService {
     private static Connection getMysqlConnection() {
         try {
             DriverManager.registerDriver((Driver) Class.forName("com.mysql.jdbc.Driver").newInstance());
-
             StringBuilder url = new StringBuilder();
-
             url.
                     append("jdbc:mysql://").        //db type
                     append("localhost:").           //host name
@@ -80,9 +110,8 @@ public class DBService {
                     append("web_parser?").          //db name
                     append("user=root&").          //login
                     append("password=password&"). // password
-                    append("characterEncoding=utf8&").
-                    append("relaxAutoCommit=true");
-
+                    append("characterEncoding=utf8&"). // encoding
+                    append("relaxAutoCommit=true"); // relaxAutoCommit
 
             System.out.println("URL: " + url + "\n");
 
@@ -97,6 +126,15 @@ public class DBService {
         BooksDAO dao = new BooksDAO(connection);
         try {
             dao.dropTable();
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public void createTables() throws DBException {
+        BooksDAO dao = new BooksDAO(connection);
+        try {
+            dao.createTable();
         } catch (SQLException e) {
             throw new DBException(e);
         }
