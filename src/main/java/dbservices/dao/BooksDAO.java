@@ -103,6 +103,7 @@ public class BooksDAO {
         getOrCreatePublisher(publisher);
 
 
+
         PreparedStatement pstmt = connection.prepareStatement(
                 "INSERT INTO books (title, translator_id, publisher_id, ISBN, annotation) " +
                         "VALUES (? , @last_inserted_tran_id, @last_inserted_pub_id, ?, ?)"
@@ -115,11 +116,7 @@ public class BooksDAO {
 
         executor.execUpdate("SET @last_inserted_id = LAST_INSERT_ID()");
         executor.execUpdate("INSERT INTO books_authors (book_id, author_id) VALUES (@last_inserted_id, @last_inserted_author_id)");
-
     }
-
-    // INSERT INTO authors (name) VALUE ('Pushkin');
-//    SET @last_inserted_author_id = LAST_INSERT_ID();
 
     private void getOrCreateAuthor(String authors) throws SQLException {
         long authorId = getAuthorId(authors);
@@ -150,7 +147,7 @@ public class BooksDAO {
     private void getOrCreatePublisher(String publisher) throws SQLException {
         long publisherId = getPublisherId(publisher);
         if (publisherId == 0L) {
-            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO translators (name) VALUE (?)");
+            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO publishers (name) VALUE (?)");
             pstmt.setString(1, publisher);
             pstmt.execute();
             pstmt.close();
@@ -180,7 +177,7 @@ public class BooksDAO {
         executor.execUpdate(
                 "CREATE TABLE IF NOT EXISTS `web_parser`.`authors` (\n" +
                         "  `id` INT NOT NULL AUTO_INCREMENT,\n" +
-                        "  `name` VARCHAR(255) NOT NULL,\n" +
+                        "  `name` VARCHAR(255) NULL,\n" +
                         "  PRIMARY KEY (`id`),\n" +
                         "  UNIQUE INDEX `name_UNIQUE` (`name` ASC))"
         );
@@ -195,7 +192,7 @@ public class BooksDAO {
         executor.execUpdate(
                 "CREATE TABLE IF NOT EXISTS `web_parser`.`publishers` (\n" +
                         "      `id` INT NOT NULL AUTO_INCREMENT,\n" +
-                        "      `name` VARCHAR(255) NOT NULL,\n" +
+                        "      `name` VARCHAR(255) NULL,\n" +
                         "      PRIMARY KEY (`id`))"
         );
 
@@ -207,7 +204,7 @@ public class BooksDAO {
                         "    `translator_id` INT NULL,\n" +
                         "    `publisher_id` INT NOT NULL,\n" +
                         "    `ISBN` VARCHAR(255) NOT NULL,\n" +
-                        "    `annotation` VARCHAR(2048) NOT NULL,\n" +
+                        "    `annotation` VARCHAR(8192) NOT NULL,\n" +
                         "    PRIMARY KEY (`id`),\n" +
                         "    UNIQUE INDEX `ISBN_name_UNIQUE` (`ISBN` ASC),\n" +
                         "    INDEX `fk_books_translators_idx` (`translator_id` ASC),\n" +
@@ -215,8 +212,8 @@ public class BooksDAO {
                         "    CONSTRAINT `fk_books_translators`\n" +
                         "      FOREIGN KEY (`translator_id`)\n" +
                         "      REFERENCES `web_parser`.`translators` (`id`)\n" +
-                        "      ON DELETE NO ACTION\n" +
-                        "      ON UPDATE NO ACTION,\n" +
+                        "      ON DELETE CASCADE\n" +
+                        "      ON UPDATE CASCADE,\n" +
                         "    CONSTRAINT `fk_books_publishers`\n" +
                         "      FOREIGN KEY (`publisher_id`)\n" +
                         "      REFERENCES `web_parser`.`publishers` (`id`)\n" +

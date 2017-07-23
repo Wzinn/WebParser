@@ -27,7 +27,7 @@ public class BookParser implements Runnable {
 
         //TODO: should be an ArrayList to send to DB
 //        ArrayList authors = getAuthors(redaction);
-        String authors = getAuthors(redaction).toString().replaceAll("\\[|\\]", "").replaceAll(", ","\t");
+        String authors = getAuthors(redaction).toString();
 
         String translators = getTranslators(redaction);
         String publisher = getPublisher(product);
