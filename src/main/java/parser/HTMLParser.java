@@ -9,7 +9,6 @@ import org.jsoup.select.Elements;
 
 public class HTMLParser {
 
-    // TODO
     private DBService dbService;
 
     private final String URL = "https://www.labirint.ru/genres/2304?page=";

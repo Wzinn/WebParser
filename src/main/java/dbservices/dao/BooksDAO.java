@@ -22,10 +22,10 @@ public class BooksDAO {
                 "web_parser.translators.name as translator, web_parser.publishers.name as publisher,  \n" +
                 "web_parser.books.isbn, web_parser.books.annotation \n" +
                 "from web_parser.books_authors\n" +
-                "\tjoin web_parser.authors on web_parser.books_authors.author_id = web_parser.authors.id\n" +
-                "\tjoin web_parser.books on web_parser.books_authors.book_id = web_parser.books.id\n" +
-                "\tjoin web_parser.translators on web_parser.books.translator_id = web_parser.translators.id\n" +
-                "\tjoin web_parser.publishers on web_parser.books.publisher_id = web_parser.publishers.id\n" +
+                " join web_parser.authors on web_parser.books_authors.author_id = web_parser.authors.id\n" +
+                " join web_parser.books on web_parser.books_authors.book_id = web_parser.books.id\n" +
+                " join web_parser.translators on web_parser.books.translator_id = web_parser.translators.id\n" +
+                " join web_parser.publishers on web_parser.books.publisher_id = web_parser.publishers.id\n" +
                 "    where web_parser.books.id =" + id, result -> {
 
             ArrayList<String> authors = new ArrayList<>();
@@ -153,15 +153,20 @@ public class BooksDAO {
 
     private void getOrCreateTranslator(String translators) throws SQLException {
         long translatorId = getTranslatorsId(translators);
-        if (translatorId == 0L) {
+        if (!translators.isEmpty()) {
+            if (translatorId == 0L) {
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO translators (name) VALUE (?)");
             pstmt.setString(1, translators);
             pstmt.execute();
             pstmt.close();
-            executor.execUpdate("SET @last_inserted_tran_id = LAST_INSERT_ID()");
+                executor.execUpdate("SET @last_inserted_tran_id = LAST_INSERT_ID()");
+            } else {
+                executor.execUpdate("SET @last_inserted_tran_id = " + translatorId);
+            }
         } else {
-            executor.execUpdate("SET @last_inserted_tran_id = " + translatorId);
+            executor.execUpdate("SET @last_inserted_tran_id = 1");
         }
+
     }
 
     private void getOrCreatePublisher(String publisher) throws SQLException {
@@ -209,7 +214,6 @@ public class BooksDAO {
 
     public void createTable() throws SQLException {
         // create tables authors, translators, publishers
-
         executor.execUpdate(
                 "CREATE TABLE IF NOT EXISTS `web_parser`.`authors` (\n" +
                         "  `id` INT NOT NULL AUTO_INCREMENT,\n" +
@@ -227,6 +231,10 @@ public class BooksDAO {
                         "    `id` INT NOT NULL AUTO_INCREMENT,\n" +
                         "    `name` VARCHAR(255) NULL,\n" +
                         "    PRIMARY KEY (`id`))"
+        );
+
+        executor.execUpdate(
+                "INSERT INTO `web_parser`.`translators` (`name`) VALUES (null);"
         );
 
         executor.execUpdate(

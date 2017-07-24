@@ -7,18 +7,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class PageParser implements Runnable {
 
     private Elements pages;
-    private Executor executor;
     private DBService dbService;
 
     PageParser(Elements pages, DBService dbService) {
         this.pages = pages;
-        executor = Executors.newFixedThreadPool(1);
         this.dbService =  dbService;
     }
 
@@ -27,8 +23,7 @@ public class PageParser implements Runnable {
         try {
             for (Element book : pages) {
                 Document bookPage = getBookPage(getLinkToBook(book));
-                executor.execute(new BookParser(bookPage, dbService));
-//                new Thread(new BookParser(bookPage)).start();
+                new Thread(new BookParser(bookPage, dbService)).start();
             }
         } catch (IOException e){
             e.printStackTrace();

@@ -25,7 +25,6 @@ public class BookParser implements Runnable {
 
         String title = getTitle(product);
 
-        //TODO: should be an ArrayList to send to DB
         ArrayList authors = getAuthors(redaction);
 
         String translators = getTranslators(redaction);

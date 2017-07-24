@@ -16,15 +16,20 @@ public class Main {
 
         try {
             dbService.cleanUp();
-            dbService.createTables();
         } catch (DBException e) {
             e.printStackTrace();
         }
 
-        HTMLParser parser = new HTMLParser(dbService);
-        parser.parse();
+        try {
+            dbService.createTables();
 
+            HTMLParser parser = new HTMLParser(dbService);
+            parser.parse();
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
 
+        /*
         try {
             ArrayList<BooksDataSet> books = dbService.getAll();
 
@@ -42,6 +47,8 @@ public class Main {
         } catch (DBException e) {
             e.printStackTrace();
         }
+        */
+
     }
 
 }
