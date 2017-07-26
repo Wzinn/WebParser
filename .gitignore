@@ -59,3 +59,5 @@ buildNumber.properties
 
 #
 *.html
+
+h2db.trace.db
