@@ -1,20 +1,28 @@
 package dbservices.dao;
 
+import dbservices.DBException;
 import dbservices.dataset.BooksDataSet;
 import dbservices.executor.Executor;
+import org.h2.jdbcx.JdbcDataSource;
 
 import java.sql.*;
 import java.util.ArrayList;
 
 public class BooksDAO {
 
-    private Executor executor;
+    private static final BooksDAO instance = new BooksDAO();
     private final Connection connection;
+    private final Executor executor;
+
     private ArrayList<Long> authorsId;
 
-    public BooksDAO(Connection connection) {
+    private BooksDAO() {
+        this.connection = getMysqlConnection();
         this.executor = new Executor(connection);
-        this.connection = connection;
+    }
+
+    public static BooksDAO getInstance() {
+        return instance;
     }
 
     public BooksDataSet get(long id) throws SQLException {
@@ -101,30 +109,47 @@ public class BooksDAO {
     }
 
     public synchronized void insertBook(String title, ArrayList<String> authors, String translators, String publisher, String ISBN, String annotation)
-            throws SQLException {
+            throws /*SQLException*/ DBException {
 
-        getOrCreateAuthor(authors);
-        getOrCreateTranslator(translators);
-        getOrCreatePublisher(publisher);
+        try {
+            connection.setAutoCommit(false); // disable autocommit to work with transactions
 
-        PreparedStatement pstmt = connection.prepareStatement(
-                "INSERT INTO books (title, translator_id, publisher_id, ISBN, annotation) " +
-                        "VALUES (? , @last_inserted_tran_id, @last_inserted_pub_id, ?, ?)"
-        );
-        pstmt.setString(1, title);
-        pstmt.setString(2, ISBN);
-        pstmt.setString(3, annotation);
-        pstmt.execute();
-        pstmt.close();
+            getOrCreateAuthor(authors);
+            getOrCreateTranslator(translators);
+            getOrCreatePublisher(publisher);
 
-        executor.execUpdate("SET @last_inserted_id = LAST_INSERT_ID()");
+            PreparedStatement pstmt = connection.prepareStatement(
+                    "INSERT INTO books (title, translator_id, publisher_id, ISBN, annotation) " +
+                            "VALUES (? , @last_inserted_tran_id, @last_inserted_pub_id, ?, ?)"
+            );
+            pstmt.setString(1, title);
+            pstmt.setString(2, ISBN);
+            pstmt.setString(3, annotation);
+            pstmt.execute();
+            pstmt.close();
 
-        if (!authorsId.isEmpty()) {
-            for (Long authorId : authorsId) {
-                executor.execUpdate("INSERT INTO books_authors (book_id, author_id) VALUES (@last_inserted_id, " + authorId + ")");
+            executor.execUpdate("SET @last_inserted_id = LAST_INSERT_ID()");
+
+            if (!authorsId.isEmpty()) {
+                for (Long authorId : authorsId) {
+                    executor.execUpdate("INSERT INTO books_authors (book_id, author_id) VALUES (@last_inserted_id, " + authorId + ")");
+                }
+            } else {
+                executor.execUpdate("INSERT INTO books_authors (book_id, author_id) VALUES (@last_inserted_id, " + 1 + ")");
             }
-        } else {
-            executor.execUpdate("INSERT INTO books_authors (book_id, author_id) VALUES (@last_inserted_id, " + 1 + ")");
+
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ignore) {
+            }
+            throw new DBException(e);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ignore) {
+            }
         }
     }
 
@@ -296,4 +321,46 @@ public class BooksDAO {
         executor.execUpdate("drop table translators");
         executor.execUpdate("drop table publishers");
     }
+
+    private static Connection getMysqlConnection() {
+        try {
+            DriverManager.registerDriver((Driver) Class.forName("com.mysql.jdbc.Driver").newInstance());
+            StringBuilder url = new StringBuilder();
+            url.
+                    append("jdbc:mysql://").        //db type
+                    append("localhost:").           //host name
+                    append("3306/").                //port
+                    append("web_parser?").          //db name
+                    append("user=root&").          //login
+                    append("password=password&"). // password
+                    append("characterEncoding=utf8&"). // encoding
+                    append("relaxAutoCommit=true"); // relaxAutoCommit
+
+            System.out.println("URL: " + url + "\n");
+
+            return DriverManager.getConnection(url.toString());
+        } catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Connection getH2Connection() {
+        try {
+            String url = "jdbc:h2:./h2db";
+            String name = "sa";
+            String pass = "password";
+
+            JdbcDataSource ds = new JdbcDataSource();
+            ds.setURL(url);
+            ds.setUser(name);
+            ds.setPassword(pass);
+
+            return DriverManager.getConnection(url, name, pass);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

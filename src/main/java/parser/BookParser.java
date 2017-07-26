@@ -1,7 +1,7 @@
 package parser;
 
 import dbservices.DBException;
-import dbservices.DBService;
+import dbservices.BooksService;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -11,11 +11,11 @@ import java.util.ArrayList;
 public class BookParser implements Runnable {
 
     private Document book;
-    private DBService dbService;
+    private BooksService booksService;
 
-    BookParser(Document book, DBService dbService) {
+    BookParser(Document book, BooksService booksService) {
         this.book = book;
-        this.dbService = dbService;
+        this.booksService = booksService;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class BookParser implements Runnable {
         String annotation = getAnnotation(book);
 
         try {
-            dbService.addBook(title, authors,translators, publisher, ISBN, annotation);
+            booksService.addBook(title, authors,translators, publisher, ISBN, annotation);
         } catch (DBException e) {
             e.printStackTrace();
         }

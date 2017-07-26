@@ -33,7 +33,7 @@ public class BooksDataSet {
 
     @Override
     public String toString() {
-        return "Book id = " + id + "\n" +
+        return "\n{ Book id = " + id +
                 " title='" + title + '\'' +
                 ", authors='" + authors + '\'' +
                 ", translators='" + translators + '\'' +

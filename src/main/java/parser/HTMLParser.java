@@ -2,19 +2,19 @@ package parser;
 
 import java.io.*;
 
-import dbservices.DBService;
+import dbservices.BooksService;
 import org.jsoup.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class HTMLParser {
 
-    private DBService dbService;
+    private BooksService booksService;
 
     private final String URL = "https://www.labirint.ru/genres/2304?page=";
 
-    public HTMLParser(DBService dbService) {
-        this.dbService = dbService;
+    public HTMLParser(BooksService booksService) {
+        this.booksService = booksService;
     }
 
     public void parse() {
@@ -26,7 +26,7 @@ public class HTMLParser {
                 Elements books = doc.select(".product-padding");
                 int lastPage = getLastPage(doc);
 
-                new Thread(new PageParser(books, dbService)).start();
+                new Thread(new PageParser(books, booksService)).start();
 
                 page++;
                 if (page == lastPage) break;

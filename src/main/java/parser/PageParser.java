@@ -1,6 +1,6 @@
 package parser;
 
-import dbservices.DBService;
+import dbservices.BooksService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,11 +11,11 @@ import java.io.IOException;
 public class PageParser implements Runnable {
 
     private Elements pages;
-    private DBService dbService;
+    private BooksService booksService;
 
-    PageParser(Elements pages, DBService dbService) {
+    PageParser(Elements pages, BooksService booksService) {
         this.pages = pages;
-        this.dbService =  dbService;
+        this.booksService = booksService;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class PageParser implements Runnable {
         try {
             for (Element book : pages) {
                 Document bookPage = getBookPage(getLinkToBook(book));
-                new Thread(new BookParser(bookPage, dbService)).start();
+                new Thread(new BookParser(bookPage, booksService)).start();
             }
         } catch (IOException e){
             e.printStackTrace();
